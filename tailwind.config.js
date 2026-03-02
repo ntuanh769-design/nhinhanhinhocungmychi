@@ -8,7 +8,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-be-vietnam)', 'sans-serif'],
+        sans: ['var(--font-be-vietnam)', 'sans-serif', '"Be Vietnam Pro"', 'Inter'],
+        serif: ['Lora', 'Merriweather', 'serif', 'Playfair Display'],
       },
       colors: {
         pmc: {

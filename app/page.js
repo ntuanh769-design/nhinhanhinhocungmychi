@@ -99,12 +99,35 @@ const MILESTONES = [
   }
 ];
 
+// Dữ liệu Lịch trình
+const SCHEDULE_EVENTS = [
+  { id: 1, date: "May 5, 2026", time: "12:00 - 16:00", title: "VŨ TRỤ CÒ BAY - CONCERT TOUR", location: "OECD CENTER, PARIS", image: "https://vmasgroup.com/wp-content/uploads/2024/05/VU-TRU-CO-BAY.png" },
+  { id: 2, date: "June 12, 2026", time: "19:00 - 22:00", title: "ĐÊM NHẠC TRỮ TÌNH QUÊ HƯƠNG", location: "NHÀ HÁT THÀNH PHỐ, HCM", image: "https://i.scdn.co/image/ab67616d0000b27371dea61e1ce07e18c746d775" },
+  { id: 2, date: "June 12, 2026", time: "19:00 - 22:00", title: "ĐÊM NHẠC TRỮ TÌNH QUÊ HƯƠNG", location: "NHÀ HÁT THÀNH PHỐ, HCM", image: "https://i.scdn.co/image/ab67616d0000b27371dea61e1ce07e18c746d775" }
+];
+
 const getVideoId = (url) => {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(regExp);
   return (match && match[2].length === 11) ? match[2] : null;
 };
 const formatCompact = (num) => new Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(num);
+
+// --- COMPONENT BACKGROUND NGHỆ THUẬT ---
+const ArtisticBackground = () => (
+  <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+    <style jsx>{`
+      @keyframes floatUp { 0% { transform: translateY(0) translateX(0); opacity: 0; } 50% { opacity: 0.5; } 100% { transform: translateY(-100vh) translateX(20px); opacity: 0; } }
+      @keyframes birdFly { 0% { transform: translateX(-10vw) scale(0.5); opacity: 0; } 20% { opacity: 0.1; } 100% { transform: translateX(110vw) scale(1); opacity: 0; } }
+      .star-particle { position: absolute; background: #D4AF37; border-radius: 50%; animation: floatUp linear infinite; }
+      .bird-svg { position: absolute; fill: rgba(255, 255, 255, 0.03); animation: birdFly linear infinite; }
+    `}</style>
+    {[...Array(20)].map((_, i) => (
+      <div key={i} className="star-particle" style={{ width: Math.random() * 3 + 'px', height: Math.random() * 3 + 'px', left: Math.random() * 100 + '%', top: '100%', animationDuration: Math.random() * 10 + 10 + 's', animationDelay: Math.random() * 15 + 's' }} />
+    ))}
+    <svg className="bird-svg" style={{ top: '30%', animationDuration: '40s' }} viewBox="0 0 24 24" width="120"><path d="M21,5c-5,0-9,4-9,4s-4-4-9-4c0,0,3,4,9,4S21,5,21,5z" /></svg>
+  </div>
+);
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('home');
@@ -116,14 +139,21 @@ export default function Home() {
   const [videos, setVideos] = useState([]);
   const [loadingVideos, setLoadingVideos] = useState(true);
 
-  // --- LOGIC CUỘN HEADER ---
+  /// --- LOGIC CUỘN HEADER ---
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      // Threshold 20px giúp chuyển trạng thái nhạy hơn
+      setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Hàm chuyển tab kết hợp cuộn lên đầu trang
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // --- FETCH DATA (SUPABASE) ---
   useEffect(() => {
@@ -201,24 +231,17 @@ export default function Home() {
   const renderContent = () => {
     switch(activeTab) {
       case 'about':
-        // CHỈNH SỬA: Chuyển từ Slider sang dạng Grid Card
         return (
-          <div className="animate-fade-in grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="animate-fade-in grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-10">
             {MILESTONES.map((item) => (
               <div key={item.id} className="group bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-pmc-gold/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <img src={item.image} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-pmc-gold text-xs font-bold px-3 py-1 rounded-full border border-zinc-700">
-                    {item.year}
-                  </div>
+                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-pmc-gold text-xs font-bold px-3 py-1 rounded-full border border-zinc-700">{item.year}</div>
                 </div>
                 <div className="p-6">
-                  <div className="text-xs font-bold text-gray-500 mb-2 tracking-widest uppercase">{item.category}</div>
-                  <h3 className="text-xl font-serif font-bold text-white mb-3 leading-tight group-hover:text-pmc-gold transition-colors">{item.title}</h3>
+                  <h3 className="text-xl font-serif font-bold text-white mb-3 group-hover:text-pmc-gold transition-colors">{item.title}</h3>
                   <p className="text-gray-400 text-sm line-clamp-4 leading-relaxed mb-4">{item.desc}</p>
-                  <div className="flex items-center gap-2 text-xs text-gray-600 font-mono border-t border-zinc-800 pt-3">
-                    <CalendarDays size={14} /> {item.date}
-                  </div>
                 </div>
               </div>
             ))}
@@ -327,21 +350,38 @@ export default function Home() {
         );
 
       case 'schedule':
-        // ... (Giữ nguyên code cũ)
         return (
-             <div className="animate-fade-in flex justify-center">
-                 {/* ... code cũ của case schedule ... */}
-                 <div className="max-w-4xl w-full bg-zinc-900 p-2 rounded-2xl shadow-xl overflow-hidden border border-zinc-800">
-                   <img src="https://scontent.fvca1-4.fna.fbcdn.net/v/t39.30808-6/616157956_1332069402299119_1295986647605451446_n.jpg?stp=dst-jpg_s640x640_tt6&_nc_cat=109&ccb=1-7&_nc_sid=833d8c&_nc_eui2=AeGrTxMXiKy0l4ivVd92hG0Mx-Uk_itVkQ3H5ST-K1WRDUpiLGYZ4bPh_X5yaCRIM_GXAEc20SLFRvlLwzc_1hgw&_nc_ohc=NEdL5tK4l9kQ7kNvwFt8qjb&_nc_oc=AdlfguU-isZPH4kpGfKTSijdlNA9HDr-jJ4Ja9iiq9d9usPRth0mqz3W99QetRXm3Q3nhTSqTErXCIoE9UOWf4tf&_nc_zt=23&_nc_ht=scontent.fvca1-4.fna&_nc_gid=qVTuLNKxaVJtelJ52Kgq3w&oh=00_Afsg23At8aQt6RCRJEtR_yYcoyidsz0hraZvaHwMCU154w&oe=69875631" className="w-full rounded-xl" alt="Lịch trình" />
-                 </div>
-             </div>
-        );
-
-      case 'schedule':
-        return (
-          <div className="animate-fade-in flex justify-center">
-             <div className="max-w-4xl w-full bg-zinc-900 p-2 rounded-2xl shadow-xl overflow-hidden border border-zinc-800">
-              <img src="https://scontent.fsgn2-10.fna.fbcdn.net/v/t39.30808-6/616157956_1332069402299119_1295986647605451446_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=833d8c&_nc_ohc=BWqZmoQMt4oQ7kNvwEo0fhW&_nc_oc=Adngx7Lozo2jel3J8VKM3P73P7l9dYzRwaffm-pJlj1xlr3VFjd7AJPwp8PNGPRHqVkGT2OkhviXDGtDjEQx3qzj&_nc_zt=23&_nc_ht=scontent.fsgn2-10.fna&_nc_gid=RtQJ9gQ__vSFDPOth6RNfw&oh=00_Afqekk2TxWUDsH3Kxl_Yp7paeAXBLW885XYxBZyrnJD2FQ&oe=69719571" className="w-full rounded-xl" alt="Lịch trình" />
+          <div className="animate-fade-in space-y-16 pt-10 font-sans">
+            <div className="relative overflow-hidden py-10 border-y border-zinc-800">
+              <style jsx>{` @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } } .marquee { display: inline-block; animation: marquee 20s linear infinite; white-space: nowrap; } `}</style>
+              <h2 className="marquee text-6xl md:text-9xl font-black text-white/5 uppercase"> LATEST EVENTS • LATEST SHOWS • LATEST EVENTS • LATEST SHOWS • </h2>
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none"> <h3 className="text-4xl md:text-6xl font-serif font-bold text-pmc-gold drop-shadow-2xl"></h3> </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
+              {SCHEDULE_EVENTS.map((event) => (
+                <div key={event.id} className="group relative bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden hover:border-pmc-gold/50 transition-all duration-500">
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    <img src={event.image} alt={event.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20" />
+                    <div className="absolute top-6 left-6 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 text-xs font-bold text-gray-400 uppercase tracking-widest">{event.date}</div>
+                    <button className="absolute inset-0 m-auto w-24 h-24 rounded-full bg-pmc-gold text-black font-black uppercase text-[10px] tracking-widest opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-all duration-500 shadow-[0_0_30px_rgba(212,175,55,0.5)]">Chi tiết</button>
+                  </div>
+                  <div className="p-8 flex justify-between items-end">
+                    <div> <p className="text-[10px] font-bold text-pmc-gold mb-2 uppercase tracking-widest">Sự kiện tiêu điểm</p> <h4 className="text-xl font-serif font-bold text-white uppercase">{event.title}</h4> <p className="text-xs text-gray-500 mt-2 flex items-center gap-1"><MapPin size={12}/> {event.location}</p> </div>
+                    <ArrowRight className="text-zinc-600 group-hover:text-pmc-gold transition-colors" />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="bg-zinc-900/50 rounded-[3rem] p-8 md:p-16 border border-zinc-800 mt-20 grid grid-cols-1 lg:grid-cols-2 gap-16">
+              <div className="space-y-8">
+                <h4 className="text-4xl font-serif font-bold text-white leading-tight">Vũ Trụ Sự Kiện</h4>
+                <p className="text-gray-400 font-lora text-lg italic">"Hãy cùng Chi viết tiếp những trang ký ức âm nhạc tuyệt vời nhất."</p>
+                <button className="px-10 py-4 bg-pmc-gold text-black font-black rounded-full hover:scale-105 transition shadow-xl">ĐĂNG KÝ NHẬN THÔNG BÁO</button>
+              </div>
+              <div className="rounded-3xl overflow-hidden h-96 grayscale hover:grayscale-0 transition-all duration-1000">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.669726937102!2d106.6648812759058!3d10.760671159501532!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f1c06f4ee45%3A0x6fb86b889387d83!2zTmjDoCBIw6F0IEjDsmEgQsOsbmggLSBUUC5IQ00!5e0!3m2!1svi!2s!4v1710000000000!5m2!1svi!2s" width="100%" height="100%" style={{ border: 0 }}></iframe>
+              </div>
             </div>
           </div>
         );
@@ -412,16 +452,16 @@ export default function Home() {
 
       default: // HOME
         return (
-          <div className="space-y-12 animate-fade-in">
-             {/* --- PHẦN NỘI DUNG MỚI: THE NARRATIVE (NHƯ TRONG CLIP) --- */}
+          <div className="space-y-12 animate-fade-in pt-10 relative z-10">
+             {/* --- PHẦN NỘI DUNG MỚI: LỜI TỰA (NHƯ TRONG CLIP) --- */}
              <div className="py-16 md:py-24 max-w-4xl mx-auto px-6 text-center border-b border-zinc-800/50">
                 <h2 className="text-pmc-gold font-serif text-3xl md:text-4xl mb-8 tracking-wide">The Narrative</h2>
                 <div className="prose prose-invert prose-lg mx-auto">
-                  <p className="text-xl md:text-2xl font-serif text-gray-300 leading-relaxed font-light italic">
-                    "In 2013, Phuong My Chi enchanted a nation as a 'folk child prodigy,' her crystalline voice breathing life into the soulful cadences of Vietnamese heritage. A decade later, this prodigy has blossomed into a radiant vanguard of contemporary art. With her 2023 masterpiece, <span className="text-white not-italic">Vũ Trụ Cò Bay</span>, Chi orchestrates a breathtaking fusion where ancestral folklore meets the pulse of modern pop."
+                  <p className="text-xl md:text-2xl font-Lora text-gray-300 leading-relaxed font-light italic">
+                    "Năm 2013, Phương Mỹ Chi đã làm say đắm cả một thế hệ với hình ảnh ‘cô bé dân ca’, sở hữu giọng hát trong trẻo như pha lê, thổi hồn vào những giai điệu đậm đà bản sắc Việt. Sau hơn một thập kỷ, cô bé ngày nào đã trưởng thành, tỏa sáng như một biểu tượng tiên phong của nghệ thuật đương đại. Năm 2023 với album Vũ Trụ Cò Bay – Chi đã tạo nên một bản hòa quyện đầy mê hoặc, nơi chất liệu dân gian truyền thống giao thoa cùng nhịp đập sôi động của pop hiện đại."
                   </p>
                   <p className="mt-6 text-gray-400 font-light">
-                    This metamorphosis marks her transition from a guardian of tradition to a modern cultural icon, reimagining classical literature for a digital generation. By gracefully intertwining the nostalgic with the avant-garde, Phuong My Chi stands as a visionary bridge between eras.
+                    Sự chuyển mình ấy đánh dấu hành trình từ người gìn giữ giá trị truyền thống trở thành một biểu tượng văn hóa mới, tái hiện tinh thần văn học cổ điển qua lăng kính của thế hệ số. Bằng cách kết nối tinh tế giữa hoài niệm và tinh thần tiên phong, Phương Mỹ Chi trở thành nhịp cầu sáng tạo nối liền các thời đại.
                   </p>
                 </div>
              </div>
@@ -573,7 +613,7 @@ export default function Home() {
         </div>
 
         <div className="relative z-10 text-center px-4 animate-fade-in-up mt-10">
-            
+          
         </div>
         
         {/* Scroll Indicator */}
