@@ -588,7 +588,7 @@ export default function Home() {
       </div>
       
       <footer className="border-t border-zinc-800 bg-black py-12 text-center">
-        <h2 className="font-bold text-xl    -pmc-gold mb-2">© 2026 PMC Fan Hub</h2>
+        <h2 className="font-bold text-xl    -pmc-gold mb-2">© 2026 Phương Mỹ Chi Fan Hub</h2>
         <p className="text-gray-600 text-sm">Developed by NhihnhanhinhocungMyChi</p>
       </footer>
     </main>
